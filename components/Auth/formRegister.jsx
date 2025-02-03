@@ -3,8 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { authValidationSchema } from "@/app/validation/authValidationSchema";
+import { registerUserCtrl } from "@/controller/authController";
+import { useRouter } from "next/navigation";
 
 function RegisterUserForm() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     emailaddress: "",
     username: "",
@@ -30,16 +34,18 @@ function RegisterUserForm() {
 
       setErrors({});
 
-      const response = await fetch("/api/user/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const registerUser = await registerUserCtrl(formData);
 
-      if (response.ok) {
+      if (!registerUser.success) {
+        setErrors({
+          message: registerUser.message,
+        });
+        return;
+      }
+
+      if (registerUser.success === true) {
         console.log("User registered successfully");
+        router.push("/dashboard");
       } else {
         console.error("User registration failed");
       }
@@ -55,6 +61,9 @@ function RegisterUserForm() {
   return (
     <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
       <h1 className="text-2xl font-bold mb-4">Register</h1>
+      {errors?.message && (
+        <p className="text-red-500 text-xs mb-4">{errors.message}</p>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700">

@@ -4,6 +4,41 @@ export const loginUserTokenCtrl = async (token) => {
   return createToken(token);
 };
 
+export const registerUserCtrl = async (formData) => {
+  try {
+    const response = await fetch("/api/user/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        message: data.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: "User registered successfully",
+      token: data.token,
+    };
+  } catch (error) {
+    console.error("Registration failed", error);
+    return {
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    };
+  }
+};
+
 export const loginUserCtrl = async (username, password) => {
   try {
     const response = await fetch("/api/user/login", {
@@ -29,24 +64,4 @@ export const loginUserCtrl = async (username, password) => {
 export const logoutUserCtrl = () => {
   removeAuthToken();
   return { success: true, message: "Logged out successfully" };
-};
-
-export const verifyUserTokenCtrl = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/verify`,
-      {
-        credentials: "include",
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Error on token verification");
-    }
-    const data = await response.json();
-
-    return { success: true, username: data };
-  } catch (error) {
-    console.error("Token verification failed", error.message);
-    return { sucess: false, username: null, error: error.message };
-  }
 };

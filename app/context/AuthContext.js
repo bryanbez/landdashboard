@@ -11,26 +11,7 @@ export function AuthProvider({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    const verifyUser = async () => {
-      try {
-        const { success, username, error } = await verifyUserTokenCtrl();
-        if (!success) {
-          console.error("Token verification failed", error);
-          setUsername(null);
-          return;
-        }
-
-        if (success) {
-          setUsername(username);
-        } else {
-          setUsername(null);
-        }
-      } catch (error) {
-        console.error("Token verification failed", error);
-        setUsername(null);
-      }
-    };
-    verifyUser();
+    return;
   }, []);
 
   const loginAction = (username) => {

@@ -1,13 +1,10 @@
-import User from "@/libs/db/models/User";
 import { NextResponse } from "next/server";
 import { comparePassword } from "@/libs/utils/passwordUtil";
-import dbConnect from "@/libs/db/init";
-import { loginUserTokenCtrl } from "@/controller/authController";
-import { createToken } from "@/libs/utils/encryption";
+import { AuthRepository } from "@/libs/db/repositories/authRepositories";
+import { setCookies } from "@/libs/utils/setCookies";
 
 export async function POST(request) {
   try {
-    await dbConnect();
     const body = await request.json();
     const { username, password } = body;
 
@@ -17,7 +14,7 @@ export async function POST(request) {
         message: "Username and password are required",
       });
     }
-    const findUsernameInfo = await User.findOne({ username });
+    const findUsernameInfo = await AuthRepository.getByUsername(username);
 
     if (!findUsernameInfo) {
       return NextResponse.json({
@@ -44,24 +41,7 @@ export async function POST(request) {
       username: findUsernameInfo.username,
     };
 
-    const generateTokenToStoreInCookies = await loginUserTokenCtrl(data);
-
-    const response = NextResponse.json({
-      message: "Login successful",
-      data,
-      status: 200,
-      sucesss: true,
-    });
-
-    response.cookies.set("token", generateTokenToStoreInCookies, {
-      httpOnly: true, // Ensures the cookie is only accessible via HTTP requests, not JavaScript code
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict", // Prevents CSRF attacks
-      maxAge: 60 * 60, // 1 hour expiration
-      path: "/", // Makes cookie available to the entire website
-    });
-
-    return response;
+    return setCookies(data, "Login User Successfully");
   } catch (error) {
     return NextResponse.json(
       { success: false, message: error.message },
