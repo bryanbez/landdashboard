@@ -1,4 +1,6 @@
 "use client";
+import { landlordRegValidationSchema } from "@/app/validation/landlordRegValidationSchema";
+import { registerLandlord } from "@/controller/landlordController";
 import React, { useRef, useState } from "react";
 
 function LandlordRegistration() {
@@ -7,6 +9,8 @@ function LandlordRegistration() {
   const landProgramDescRef = useRef(null);
   const devPtsRateRef = useRef(null);
   const [lands, setLands] = useState([""]);
+
+  const [errors, setErrors] = useState({});
 
   const handleAddLand = () => {
     setLands([...lands, ""]);
@@ -22,7 +26,7 @@ function LandlordRegistration() {
     setLands(newLands);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = {
       landProgramName: landProgramNameRef.current.value,
@@ -31,7 +35,30 @@ function LandlordRegistration() {
       devPtsRate: parseFloat(devPtsRateRef.current.value),
       lands: lands,
     };
-    console.log("Submitted Data:", formData);
+
+    try {
+      await landlordRegValidationSchema.validate(formData, {
+        abortEarly: false,
+      });
+
+      setErrors({});
+
+      const registerLandlordResponse = await registerLandlord(formData);
+
+      if (!registerLandlordResponse.success) {
+        setErrors({ message: registerLandlordResponse.message });
+        return;
+      }
+
+      console.log("Landlord registered successfully");
+      console.log(registerLandlordResponse);
+    } catch (validationError) {
+      const validationErrors = {};
+      validationError.inner.forEach((error) => {
+        validationErrors[error.path] = error.message;
+      });
+      setErrors(validationErrors);
+    }
   };
 
   return (
@@ -48,6 +75,9 @@ function LandlordRegistration() {
                   ref={landProgramNameRef}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.landProgramName}
+                </p>
               </label>
             </div>
             <div className="mb-4">
@@ -58,6 +88,9 @@ function LandlordRegistration() {
                   rows={5}
                   ref={landProgramDescRef}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.landProgramDesc}
+                </p>
               </label>
             </div>
 
@@ -70,6 +103,7 @@ function LandlordRegistration() {
                   ref={devPtsRateRef}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
+                <p className="text-red-500 text-xs mt-1">{errors.devPtsRate}</p>
               </label>
             </div>
             <div className="mb-4">
@@ -84,6 +118,7 @@ function LandlordRegistration() {
             </div>
           </div>
           <div>
+            <p className="text-red-500 text-xs mt-1">{errors.landIds}</p>
             <div className="grid grid-cols-3 gap-4">
               {lands.map((land, index) => (
                 <div key={index} className="mb-4">

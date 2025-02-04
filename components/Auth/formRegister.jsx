@@ -49,9 +49,9 @@ function RegisterUserForm() {
       } else {
         console.error("User registration failed");
       }
-    } catch (valiadatioError) {
+    } catch (validationError) {
       const validationErrors = {};
-      valiadatioError.inner.forEach((error) => {
+      validationError.inner.forEach((error) => {
         validationErrors[error.path] = error.message;
       });
       setErrors(validationErrors);

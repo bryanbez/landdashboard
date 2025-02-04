@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { verifyUserTokenCtrl } from "@/controller/authController";
 
 const AuthContext = createContext(null);
 
@@ -11,7 +10,16 @@ export function AuthProvider({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    return;
+    const fetchUsername = async () => {
+      const response = await fetch("/api/user/get-user");
+      const data = await response.json();
+      if (data.success) {
+        setUsername(data.data);
+      } else {
+        setUsername(null);
+      }
+    };
+    fetchUsername();
   }, []);
 
   const loginAction = (username) => {
