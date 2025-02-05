@@ -22,7 +22,6 @@ export async function POST(request) {
         status: 400,
       });
     }
-
     const createLandlord = await LandlordRepository.create({
       landProgramName,
       landProgramDescription: landProgramDesc,

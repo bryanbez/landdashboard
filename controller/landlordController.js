@@ -1,3 +1,5 @@
+// cant run the uploadImage function here because of browser environment. We use firebase-admin which is server side only
+
 export const registerLandlord = async (formData) => {
   try {
     const response = await fetch("/api/landlord/register", {
@@ -24,7 +26,7 @@ export const registerLandlord = async (formData) => {
       status: response.status,
     };
   } catch (error) {
-    console.error("Error registering landlord", error);
+    console.error("Error registering landlord", error.message);
     return {
       success: false,
       message: "Internal Server Error",

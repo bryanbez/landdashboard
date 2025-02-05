@@ -2,6 +2,10 @@
 import { landlordRegValidationSchema } from "@/app/validation/landlordRegValidationSchema";
 import { registerLandlord } from "@/controller/landlordController";
 import React, { useRef, useState } from "react";
+import ImageFormInput from "../formImage/imageInput";
+import ImagePreview from "../formImage/previewImage";
+import UploadProgress from "../formImage/uploadProgress";
+import UploadFileToBucket from "@/libs/firebase/image/useFirebaseUpload";
 
 function LandlordRegistration() {
   const landProgramNameRef = useRef(null);
@@ -11,6 +15,8 @@ function LandlordRegistration() {
   const [lands, setLands] = useState([""]);
 
   const [errors, setErrors] = useState({});
+
+  const { progress, imageUrl, uploadOnBucketStorage } = UploadFileToBucket();
 
   const handleAddLand = () => {
     setLands([...lands, ""]);
@@ -28,10 +34,13 @@ function LandlordRegistration() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (landProgramBannerImageRef.current)
+      uploadOnBucketStorage(landProgramBannerImageRef.current);
     const formData = {
       landProgramName: landProgramNameRef.current.value,
       landProgramDesc: landProgramDescRef.current.value,
-      landProgramBannerImage: landProgramBannerImageRef.current.files[0],
+      landProgramBannerImage: imageUrl ? imageUrl : null,
       devPtsRate: parseFloat(devPtsRateRef.current.value),
       lands: lands,
     };
@@ -109,11 +118,13 @@ function LandlordRegistration() {
             <div className="mb-4">
               <label className="block text-gray-700">
                 Land Program Banner Image:
-                <input
-                  type="file"
-                  ref={landProgramBannerImageRef}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                <ImageFormInput
+                  onFileSelect={(file) =>
+                    (landProgramBannerImageRef.current = file)
+                  }
                 />
+                <ImagePreview imageUrl={imageUrl} />
+                <UploadProgress progress={progress} />
               </label>
             </div>
           </div>
