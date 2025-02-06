@@ -14,10 +14,14 @@ export async function GET(request) {
   }
   if (getUsername) {
     const username = getUsername.payload.username;
+    const userId = getUsername.payload.id;
     return NextResponse.json({
       status: 200,
       success: true,
-      data: username,
+      data: {
+        username,
+        userId,
+      },
     });
   }
 }

@@ -10,6 +10,7 @@ export async function POST(request) {
       devPtsRate,
       landProgramBannerImage,
       lands,
+      programOwner,
       applicationStatus,
     } = body;
 
@@ -28,6 +29,7 @@ export async function POST(request) {
       devPtsRate,
       landProgramBannerImage,
       landIds: lands,
+      programOwner,
       applicationStatus,
     });
 

@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [username, setUsername] = useState(null);
+  const [userID, setUserID] = useState(null);
 
   const router = useRouter();
 
@@ -13,10 +14,14 @@ export function AuthProvider({ children }) {
     const fetchUsername = async () => {
       const response = await fetch("/api/user/get-user");
       const data = await response.json();
-      if (data.success) {
-        setUsername(data.data);
-      } else {
-        setUsername(null);
+      if (data) {
+        const { username, userId } = data.data;
+        if (data.success) {
+          setUsername(username);
+          setUserID(userId);
+        } else {
+          setUsername(null);
+        }
       }
     };
     fetchUsername();
@@ -28,7 +33,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ username, loginAction }}>
+    <AuthContext.Provider value={{ username, userID, loginAction }}>
       {children}
     </AuthContext.Provider>
   );

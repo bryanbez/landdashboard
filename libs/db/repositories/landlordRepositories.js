@@ -8,6 +8,7 @@ export const LandlordRepository = {
     devPtsRate,
     landProgramBannerImage,
     landIds,
+    programOwner,
     applicationStatus = "pending",
   }) {
     await dbConnect();
@@ -17,6 +18,7 @@ export const LandlordRepository = {
       devPtsRate,
       landProgramBannerImage,
       landIds,
+      programOwner,
       applicationStatus,
     });
     const saveLandlord = await landlord.save();

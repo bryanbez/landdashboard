@@ -8,6 +8,7 @@ const LandlordSchema = new Schema(
     devPtsRate: { type: Number, required: true },
     landProgramBannerImage: { type: String },
     landIds: { type: [Number], required: true },
+    programOwner: { type: String, required: true },
     applicationStatus: { type: String },
   },
   { timestamps: true }

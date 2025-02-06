@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { loginValidationSchema } from "@/app/validation/loginValidationSchema";
 import { useAuth } from "@/app/context/AuthContext";
 import { loginUserCtrl } from "@/controller/authController";
+import ErrorModal from "../Modal/errorModal";
 
 function LoginForm() {
   const [username, setInputUsername] = useState("");
   const [password, setInputPassword] = useState("");
 
   const [errors, setErrors] = useState({});
-  const [loginStatusMessage, setLoginStatusMessage] = useState("");
+  const [loginErrors, setLoginErrors] = useState([]);
 
   const router = useRouter();
   const { loginAction } = useAuth();
@@ -27,6 +28,7 @@ function LoginForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const loginErrorMessage = [];
     try {
       await loginValidationSchema.validate(
         { username, password },
@@ -37,7 +39,14 @@ function LoginForm() {
       const response = await loginUserCtrl(username, password);
 
       if (response.success === false) {
-        setLoginStatusMessage(response.message);
+        loginErrorMessage.push(response.message);
+      }
+
+      if (loginErrorMessage.length > 0) {
+        setLoginErrors(loginErrorMessage);
+      } else {
+        setLoginErrors([]);
+        // Proceed with form submission logic
       }
 
       loginAction(response.data.username);
@@ -57,9 +66,6 @@ function LoginForm() {
   return (
     <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
       <h1 className="text-2xl font-bold mb-4">Login</h1>
-      {loginStatusMessage ? (
-        <p className="text-red-500 text-xs mb-4">{loginStatusMessage}</p>
-      ) : null}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -96,6 +102,9 @@ function LoginForm() {
           </div>
         </div>
       </form>
+      {loginErrors.length > 0 && (
+        <ErrorModal errors={loginErrors} onClose={() => setLoginErrors([])} />
+      )}
     </div>
   );
 }
