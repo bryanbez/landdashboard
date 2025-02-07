@@ -5,6 +5,14 @@ export async function GET(request) {
   const token = request.cookies.get("token")?.value;
   const getUsername = await getDecodedToken(token);
 
+  if (!token) {
+    return NextResponse.json({
+      message: "No Token Found",
+      status: 401,
+      success: false,
+    });
+  }
+
   if (!getUsername) {
     return NextResponse.json({
       message: "No User Found",

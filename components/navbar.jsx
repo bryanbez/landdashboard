@@ -22,8 +22,15 @@ function AppNavbar() {
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white text-lg font-bold">MyApp</div>
         <div className="flex space-x-4">
+          {/* Other links */}
+          <Link href="/" className="text-gray-300 hover:text-white">
+            Home
+          </Link>
+          <Link href="/landlord" className="text-gray-300 hover:text-white">
+            Landlord Page
+          </Link>
           <a href="#" className="text-gray-300 hover:text-white">
-            {username ? `Welcome, ${username}` : "Guest"}
+            {username ? `Welcome, ${username}` : ""}
           </a>
           {username ? (
             <button

@@ -1,6 +1,9 @@
 "use client";
 import { landlordRegValidationSchema } from "@/app/validation/landlordRegValidationSchema";
-import { registerLandlord } from "@/controller/landlordController";
+import {
+  checkLandOnInput,
+  registerLandlord,
+} from "@/controller/landlordController";
 import React, { useEffect, useRef, useState } from "react";
 import ImageFormInput from "../formImage/imageInput";
 import ImagePreview from "../formImage/previewImage";
@@ -19,6 +22,10 @@ function LandlordRegistration() {
 
   const [preview, setPreview] = useState(null);
 
+  const [loadingIcon, setLoadingIcon] = useState(false); // Tracks verification status
+
+  const [loadingStatus, setLoadingStatus] = useState(null);
+
   const { progress, imageUrl, uploadOnBucketStorage } = UploadFileToBucket();
 
   const { userID } = useAuth();
@@ -31,10 +38,27 @@ function LandlordRegistration() {
     setLands(lands.filter((_, i) => i !== index));
   };
 
-  const handleChange = (index, event) => {
+  const handleChange = async (index, event) => {
     const newLands = [...lands];
     newLands[index] = event.target.value;
     setLands(newLands);
+  };
+
+  const verifyLandOwnership = async (event) => {
+    if (event.target.value.length === 6) {
+      setLoadingIcon(true);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const verifyLandOwnership = await checkLandOnInput(event.target.value);
+      if (verifyLandOwnership.success === true) {
+        setLoadingStatus("valid");
+        console.log("Valid Land");
+      } else {
+        setLoadingStatus("invalid");
+        console.log("Invalid Land");
+        console.log("Land not found or not owned");
+      }
+      setLoadingIcon(false);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -159,33 +183,53 @@ function LandlordRegistration() {
               <p className="text-red-500 text-xs mt-1">{errors.landIds}</p>
               <div className="grid grid-cols-1 gap-4">
                 {lands.map((land, index) => (
-                  <div key={index} className="mb-4">
+                  <div key={index} className="relative mb-4">
+                    {" "}
+                    {/* Wrapper with relative positioning */}
                     <label className="block text-gray-700 font-semibold">
                       Land ID:
-                      <span>
-                        <button
-                          type="button"
-                          onClick={() => removeLandTextbox(index)}
-                          className="ml-2 bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-700">
-                          ❌
-                        </button>
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLandTextbox(index)}
+                        className="ml-2 bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-700">
+                        ❌
+                      </button>
+                    </label>
+                    {/* Input Box with icons inside */}
+                    <div className="relative">
                       <input
                         type="text"
                         value={land}
                         onChange={(event) => handleChange(index, event)}
-                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        onInput={async (event) =>
+                          await verifyLandOwnership(event)
+                        }
+                        className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       />
-                    </label>
+
+                      {/* Status Icons inside input box */}
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        {loadingIcon && <span className="loader"></span>}
+                        {loadingStatus === "valid" && (
+                          <span className="text-green-500">✔️</span>
+                        )}
+                        {loadingStatus === "invalid" && (
+                          <span className="text-red-500">❌</span>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={handleAddLand}
-                className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">
-                {lands.length === 0 ? "Add Land" : "Add Another Land"}
-              </button>
+
+              {loadingStatus === "valid" && (
+                <button
+                  type="button"
+                  onClick={handleAddLand}
+                  className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">
+                  {lands.length === 0 ? "Add Land" : "Add Another Land"}
+                </button>
+              )}
             </div>
           </div>
 
@@ -199,6 +243,25 @@ function LandlordRegistration() {
           </div>
         </form>
       </div>
+      <style jsx>{`
+        .loader {
+          width: 16px;
+          height: 16px;
+          border: 3px solid #ddd;
+          border-top-color: #3498db;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          display: inline-block;
+        }
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }

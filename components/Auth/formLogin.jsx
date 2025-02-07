@@ -64,48 +64,52 @@ function LoginForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
-
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700">
-            Username:
-            <input
-              type="text"
-              name="username"
-              value={username}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-          </label>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">
-            Password:
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-            <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-          </label>
-          <div className="mt-4">
-            <input
-              type="submit"
-              value="Login"
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-            />
-          </div>
-        </div>
-      </form>
+    <>
       {loginErrors.length > 0 && (
         <ErrorModal errors={loginErrors} onClose={() => setLoginErrors([])} />
       )}
-    </div>
+      <div className="w-1/4 mx-auto min-h-screen flex items-center justify-center">
+        <div className="w-full max-w-5xl bg-white shadow-lg rounded-2xl p-8 transform -translate-y-20">
+          <h1 className="text-2xl font-bold mb-4">Login</h1>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold">
+                Username:
+                <input
+                  type="text"
+                  name="username"
+                  value={username}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+              </label>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold">
+                Password:
+                <input
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              </label>
+              <div className="mt-4">
+                <input
+                  type="submit"
+                  value="Login"
+                  className="px-6 py-2 bg-green-500 text-white text-lg font-semibold rounded-lg hover:bg-green-600 transition"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
   );
 }
 

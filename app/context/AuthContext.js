@@ -13,8 +13,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const fetchUsername = async () => {
       const response = await fetch("/api/user/get-user");
+
       const data = await response.json();
-      if (data) {
+
+      if (data.success === true) {
         const { username, userId } = data.data;
         if (data.success) {
           setUsername(username);
@@ -23,6 +25,7 @@ export function AuthProvider({ children }) {
           setUsername(null);
         }
       }
+      console.log(data.success);
     };
     fetchUsername();
   }, []);
