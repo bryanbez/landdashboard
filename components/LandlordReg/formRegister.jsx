@@ -10,56 +10,20 @@ import ImagePreview from "../formImage/previewImage";
 import UploadProgress from "../formImage/uploadProgress";
 import UploadFileToBucket from "@/libs/firebase/image/useFirebaseUpload";
 import { useAuth } from "@/app/context/AuthContext";
+import { LandsInputTextbox } from "./landsInputForm";
 
 function LandlordRegistration() {
-  const landProgramNameRef = useRef(null);
+  const [landProgramName, setLandProgramName] = useState("");
+  const [landProgramDesc, setLandProgramDesc] = useState("");
   const landProgramBannerImageRef = useRef(null);
-  const landProgramDescRef = useRef(null);
-  const devPtsRateRef = useRef(null);
-  const [lands, setLands] = useState([""]);
+  const [devPtsRate, setDevPtsRate] = useState(0);
+  const [landIds, setLandIds] = useState([]);
 
   const [errors, setErrors] = useState({});
 
   const [preview, setPreview] = useState(null);
-
-  const [loadingIcon, setLoadingIcon] = useState(false); // Tracks verification status
-
-  const [loadingStatus, setLoadingStatus] = useState(null);
-
   const { progress, imageUrl, uploadOnBucketStorage } = UploadFileToBucket();
-
   const { userID } = useAuth();
-
-  const handleAddLand = () => {
-    setLands([...lands, ""]);
-  };
-
-  const removeLandTextbox = (index) => {
-    setLands(lands.filter((_, i) => i !== index));
-  };
-
-  const handleChange = async (index, event) => {
-    const newLands = [...lands];
-    newLands[index] = event.target.value;
-    setLands(newLands);
-  };
-
-  const verifyLandOwnership = async (event) => {
-    if (event.target.value.length === 6) {
-      setLoadingIcon(true);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const verifyLandOwnership = await checkLandOnInput(event.target.value);
-      if (verifyLandOwnership.success === true) {
-        setLoadingStatus("valid");
-        console.log("Valid Land");
-      } else {
-        setLoadingStatus("invalid");
-        console.log("Invalid Land");
-        console.log("Land not found or not owned");
-      }
-      setLoadingIcon(false);
-    }
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -68,11 +32,11 @@ function LandlordRegistration() {
       uploadOnBucketStorage(landProgramBannerImageRef.current);
 
     const formData = {
-      landProgramName: landProgramNameRef.current.value,
-      landProgramDesc: landProgramDescRef.current.value,
+      landProgramName,
+      landProgramDesc,
       landProgramBannerImage: imageUrl ? imageUrl : null,
-      devPtsRate: parseFloat(devPtsRateRef.current.value),
-      lands: lands,
+      devPtsRate: parseFloat(devPtsRate),
+      lands: landIds,
       programOwner: userID,
     };
 
@@ -91,7 +55,11 @@ function LandlordRegistration() {
       }
 
       console.log("Landlord registered successfully");
-      console.log(registerLandlordResponse);
+      landProgramBannerImageRef.current.value = null;
+      setLandProgramName("");
+      setLandProgramDesc("");
+      setDevPtsRate(0);
+      landIds.length = 0;
     } catch (validationError) {
       const validationErrors = {};
       validationError.inner.forEach((error) => {
@@ -122,8 +90,9 @@ function LandlordRegistration() {
                   Land Program Name:
                   <input
                     type="text"
-                    ref={landProgramNameRef}
+                    value={landProgramName}
                     className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    onChange={(e) => setLandProgramName(e.target.value)}
                   />
                   <p className="text-red-500 text-xs mt-1">
                     {errors.landProgramName}
@@ -137,7 +106,8 @@ function LandlordRegistration() {
                   <textarea
                     cols={8}
                     rows={5}
-                    ref={landProgramDescRef}
+                    value={landProgramDesc}
+                    onChange={(e) => setLandProgramDesc(e.target.value)}
                     className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                   <p className="text-red-500 text-xs mt-1">
                     {errors.landProgramDesc}
@@ -151,7 +121,8 @@ function LandlordRegistration() {
                   <input
                     type="number"
                     step="0.01"
-                    ref={devPtsRateRef}
+                    value={devPtsRate}
+                    onChange={(e) => setDevPtsRate(e.target.value)}
                     className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <p className="text-red-500 text-xs mt-1">
@@ -182,54 +153,10 @@ function LandlordRegistration() {
             <div>
               <p className="text-red-500 text-xs mt-1">{errors.landIds}</p>
               <div className="grid grid-cols-1 gap-4">
-                {lands.map((land, index) => (
-                  <div key={index} className="relative mb-4">
-                    {" "}
-                    {/* Wrapper with relative positioning */}
-                    <label className="block text-gray-700 font-semibold">
-                      Land ID:
-                      <button
-                        type="button"
-                        onClick={() => removeLandTextbox(index)}
-                        className="ml-2 bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-700">
-                        ❌
-                      </button>
-                    </label>
-                    {/* Input Box with icons inside */}
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={land}
-                        onChange={(event) => handleChange(index, event)}
-                        onInput={async (event) =>
-                          await verifyLandOwnership(event)
-                        }
-                        className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      />
-
-                      {/* Status Icons inside input box */}
-                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        {loadingIcon && <span className="loader"></span>}
-                        {loadingStatus === "valid" && (
-                          <span className="text-green-500">✔️</span>
-                        )}
-                        {loadingStatus === "invalid" && (
-                          <span className="text-red-500">❌</span>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                <LandsInputTextbox
+                  landIds={landIds}
+                  setLandIds={setLandIds}></LandsInputTextbox>
               </div>
-
-              {loadingStatus === "valid" && (
-                <button
-                  type="button"
-                  onClick={handleAddLand}
-                  className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">
-                  {lands.length === 0 ? "Add Land" : "Add Another Land"}
-                </button>
-              )}
             </div>
           </div>
 
@@ -243,25 +170,6 @@ function LandlordRegistration() {
           </div>
         </form>
       </div>
-      <style jsx>{`
-        .loader {
-          width: 16px;
-          height: 16px;
-          border: 3px solid #ddd;
-          border-top-color: #3498db;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          display: inline-block;
-        }
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 }
